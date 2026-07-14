@@ -12,6 +12,7 @@ dependencies = [
     "pydantic_settings",
     "pymongo[srv]",
     "pandas",
+    "scikit-learn",
 ]
 
 [project.optional-dependencies]

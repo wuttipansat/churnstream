@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     mongodb_socket_timeout_ms: int = 10000
     mongodb_max_pool_size: int = 20
 
+    mlflow_tracking_uri: str = "http://localhost:5000"
+    mlflow_experiment_name: str = "churnstream-training"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

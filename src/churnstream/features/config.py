@@ -1,6 +1,9 @@
 from dataclasses import dataclass
 
+from pydantic import BaseModel
+
 from churnstream.schemas.data_schemas import Record
+from churnstream.features.engineering import EngineeredFeature
 
 @dataclass(frozen=True)
 class FeatureConfig:
@@ -21,7 +24,7 @@ class FeatureConfig:
     
     @property
     def model_categorical(self) -> tuple[str, ...]:
-        return self.model_categorical + self.engineered_categorical
+        return self.categorical + self.engineered_categorical
     
     @property
     def model_features(self) -> tuple[str, ...]:
@@ -35,36 +38,36 @@ class FeatureConfig:
     def raw_columns(self) -> tuple[str, ...]:
         return self.identifiers + self.input_features + (self.target,)
     
+def get_fields(
+        model: type[BaseModel],
+        role: str,
+        feature_type: str | None = None,
+) -> tuple[str, ...]:
+    return tuple(
+        name
+        for name, field in model.model_fields.items()
+        if (field.json_schema_extra or {}).get("role") == role
+        and (
+            feature_type is None
+            or (field.json_schema_extra or {}).get("feature_type")
+            == feature_type
+        )
+    )
+
 def build_feature_config() -> FeatureConfig:
-    identifiers: list[str] = []
-    numeric: list[str] = []
-    categorical: list[str] = []
-    targets: list[str] = []
 
-    for field_name, field_info in Record.model_fields.items():
-        metadata = field_info.json_schema_extra or {}
-
-        role = metadata.get("role")
-        feature_type = metadata.get("feature_type")
-
-        if role == "identifier":
-            identifiers.append(field_name)
-
-        elif role == "target":
-            targets.append(field_name)
-
-        elif role == "feature":
-            if feature_type == "numeric":
-                numeric.append(field_name)
-            elif feature_type == "categorical":
-                categorical.append(field_name)
+    targets = get_fields(Record, "target")
 
     if len(targets) != 1:
-        raise ValueError(f"Expected exactly one target column, got: {targets}")
+        raise ValueError(
+            f"Expected exactly one target column, got: {targets}"
+        )
     
     return FeatureConfig(
         target=targets[0],
-        identifiers=tuple(identifiers),
-        numeric=tuple(numeric),
-        categorical=tuple(categorical),
+        identifiers=get_fields(Record, "identifier"),
+        numeric=get_fields(Record, "feature", "numeric"),
+        categorical=get_fields(Record, "feature", "categorical"),
+        engineered_numeric=get_fields(EngineeredFeature, "engineered_feature", "numeric"),
+        engineered_categorical=get_fields(EngineeredFeature, "engineered_feature", "categorical")
     )
