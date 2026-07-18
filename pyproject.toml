@@ -13,6 +13,9 @@ dependencies = [
     "pymongo[srv]",
     "pandas",
     "scikit-learn",
+    "mlflow",
+    "fastapi",
+    "uvicorn[standard]",
 ]
 
 [project.optional-dependencies]

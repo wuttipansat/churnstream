@@ -20,7 +20,9 @@ from sklearn.model_selection import (
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
 
+from churnstream.core.config import get_settings
 from churnstream.data.loader import load_data
+from churnstream.data.validator import validate_data
 from churnstream.features.config import FeatureConfig, build_feature_config
 from churnstream.features.engineering import engineer_features
 from churnstream.preprocess.preprocessing import build_preprocessor
@@ -28,6 +30,7 @@ from churnstream.training.mlflow_tracker import (
     configure_mlflow,
     log_benchmark_run,
     log_final_run,
+    register_best_model,
 )
 
 from churnstream.training.models import RANDOM_STATE, get_models
@@ -124,6 +127,15 @@ def train() -> None:
     configure_mlflow()
 
     dataframe = load_data()
+
+    validation = validate_data(dataframe)
+
+    if not validation.is_valid:
+        raise ValueError(
+            "Training data validation failed: "
+            + "; ".join(validation.errors)
+        )
+    
     config = build_feature_config()
 
     dataframe = dataframe.dropna(
@@ -185,6 +197,8 @@ def train() -> None:
         test_rows=len(X_test),
         benchmark_results=benchmark_results,
     )
+
+    register_best_model(model_uri)
 
     print(f"\n Best model: {best_model_name}")
 

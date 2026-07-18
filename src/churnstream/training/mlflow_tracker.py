@@ -1,7 +1,12 @@
 from typing import Any
+from pathlib import Path
+
+import joblib
+import json
 
 import mlflow
 import mlflow.sklearn
+from mlflow import MlflowClient
 import pandas as pd
 from mlflow.models import infer_signature
 from sklearn.base import BaseEstimator
@@ -9,6 +14,70 @@ from sklearn.pipeline import Pipeline
 
 from churnstream.core.config import get_settings
 from churnstream.features.config import FeatureConfig
+
+def register_best_model(
+        model_uri: str,
+) -> str:
+    
+    settings = get_settings()
+
+    model_version = mlflow.register_model(
+        model_uri=model_uri,
+        name=settings.mlflow_registered_model_name,
+    )
+
+    MlflowClient().set_registered_model_alias(
+        name=settings.mlflow_registered_model_name,
+        alias=settings.mlflow_model_alias,
+        version=model_version.version,
+    )
+
+    return f"models:/{settings.mlflow_registered_model_name}@{settings.mlflow_model_alias}"
+
+def export_champion_model() -> Path:
+    settings = get_settings()
+
+    mlflow.set_tracking_uri(settings.mlflow_tracking_uri)
+    mlflow.set_registry_uri(settings.mlflow_tracking_uri)
+
+    model_uri = f"models:/{settings.mlflow_registered_model_name}@{settings.mlflow_model_alias}"
+
+    print(f"Loading model from: {model_uri}")
+
+    model = mlflow.sklearn.load_model(model_uri)
+
+    output_path = Path(settings.model_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    joblib.dump(model, output_path)
+
+    client = MlflowClient()
+
+    model_version = client.get_model_version_by_alias(
+        name=settings.mlflow_registered_model_name,
+        alias=settings.mlflow_model_alias,
+    )
+
+    metadata = {
+        "registered_model_name": settings.mlflow_registered_model_name,
+        "alias": settings.mlflow_model_alias,
+        "version": str(model_version.version),
+        "source_uri": model_uri,
+        "run_id": model_version.run_id,
+    }
+
+    metadata_path = output_path.parent / "model_metadata.json"
+
+    metadata_path.write_text(
+        json.dumps(metadata, indent=2),
+        encoding="utf-8",
+    )
+
+    print(f"Model exported to: {output_path}")
+    print(f"Metadata exported to: {metadata_path}")
+    print(f"Model version: {model_version.version}")
+
+    return output_path
 
 def configure_mlflow() -> None:
     settings = get_settings()

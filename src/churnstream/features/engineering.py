@@ -24,7 +24,12 @@ class EngineeredFeature(BaseModel):
 
     BalanceSalaryRatio: float = EngineeredFeatureField(
         feature_type="numeric",
-        source_columns=("Balance", "NumOfProducts"),
+        source_columns=("Balance", "EstimatedSalary"),
+    )
+
+    BalancePerProduct: float = EngineeredFeatureField(
+        feature_type="numeric",
+        source_columns=("Balance", "NumOfProducts")
     )
 
     TenureAgeRatio: float = EngineeredFeatureField(

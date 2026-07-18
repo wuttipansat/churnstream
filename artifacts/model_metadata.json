@@ -1,0 +1,7 @@
+{
+  "registered_model_name": "churnstream-classifier",
+  "alias": "champion",
+  "version": "2",
+  "source_uri": "models:/churnstream-classifier@champion",
+  "run_id": "e7c122f2a0264548acc82b792dceb35e"
+}

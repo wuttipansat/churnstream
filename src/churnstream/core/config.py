@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     mlflow_tracking_uri: str = "http://localhost:5000"
     mlflow_experiment_name: str = "churnstream-training"
 
+    mlflow_registered_model_name: str = "churnstream-classifier"
+    mlflow_model_alias: str = "champion"
+
+    model_path: str = "artifacts/model.pkl"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
