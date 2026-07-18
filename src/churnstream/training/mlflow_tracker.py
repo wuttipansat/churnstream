@@ -66,7 +66,9 @@ def export_champion_model() -> Path:
         "run_id": model_version.run_id,
     }
 
-    metadata_path = output_path.parent / "model_metadata.json"
+
+    metadata_path = Path(settings.model_metadata_path)
+    metadata_path.parent.mkdir(parents=True, exist_ok=True)
 
     metadata_path.write_text(
         json.dumps(metadata, indent=2),

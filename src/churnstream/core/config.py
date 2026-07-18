@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     mlflow_model_alias: str = "champion"
 
     model_path: str = "artifacts/model.pkl"
+    model_metadata_path: str ="artifacts/model_metadata.json"
 
     model_config = SettingsConfigDict(
         env_file=".env",
