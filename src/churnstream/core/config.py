@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     app_env: str = "local"
     debug: bool = True
 
-    mongodb_uri: str
+    mongodb_uri: str | None = None
     mongodb_database: str = "churnstream"
     mongodb_collection: str = "customers"
 

@@ -13,12 +13,17 @@ dependencies = [
     "pymongo[srv]",
     "pandas",
     "scikit-learn",
-    "mlflow",
     "fastapi",
     "uvicorn[standard]",
+    "joblib",
 ]
 
 [project.optional-dependencies]
+
+training = [
+    "mlflow"
+]
+
 dev = [
     "pytest",
     "ruff",
