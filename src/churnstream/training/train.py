@@ -3,9 +3,7 @@ from sklearn.base import BaseEstimator
 from sklearn.metrics import (
     accuracy_score,
     average_precision_score,
-    confusion_matrix,
     f1_score,
-    make_scorer,
     precision_score,
     recall_score,
     roc_auc_score,
@@ -20,7 +18,6 @@ from sklearn.model_selection import (
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer
 
-from churnstream.core.config import get_settings
 from churnstream.data.loader import load_data
 from churnstream.data.validator import validate_data
 from churnstream.features.config import FeatureConfig, build_feature_config
